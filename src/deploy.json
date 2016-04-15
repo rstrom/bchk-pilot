@@ -1,0 +1,16 @@
+{
+  "S3": {
+    "Bucket": "bchkaspects"
+  },
+  "HIT": {
+    "Title": "Academic survey about what is important in your life (~30 minutes)",
+    "Description": "Complete a survey about what is important to you in your life. You may take this survey only one time. You may be contacted in the future for follow-up surveys available by invitation only.",
+    "AssignmentDurationInSeconds": 3600,
+    "LifetimeInSeconds": 360000,
+    "MaxAssignments": 100,
+    "Reward": {
+      "Amount": 0.01,
+      "CurrencyCode": "USD"
+    }
+  }
+}

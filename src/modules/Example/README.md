@@ -1,0 +1,1 @@
+This example module solicits a yes or no answer to a question. It serves as a basic template for a survey module.

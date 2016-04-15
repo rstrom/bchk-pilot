@@ -1,0 +1,1 @@
+The Headers module collects browser header values, including user agent (browser version) and language settings.
