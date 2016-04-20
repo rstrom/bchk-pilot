@@ -17,7 +17,6 @@ function choose (n, aspects, bucket) {
 
 function sample (props) {
   const {
-      push,
       skip_if_true,
       skip_if_false,
       n,
@@ -61,13 +60,7 @@ class Sample extends React.Component {
   }
 
   componentWillMount () {
-    console.log('mount', this.props)
-    this.props.push(sample(this.props))
-  }
-
-  componentWillReceiveProps (props) {
-    console.log('receiving')
-    props.push(sample(props))
+    this.props.instaPush(sample(this.props))
   }
 
   render () { return <div></div> }

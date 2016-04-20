@@ -13,7 +13,7 @@ class URLParams extends React.Component {
       .map((item) => item.split('='))
       .object()
       .value()
-    this.props.push(params)
+    this.props.instaPush(params)
   }
 
   render () {

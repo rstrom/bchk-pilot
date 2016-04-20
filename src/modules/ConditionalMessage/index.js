@@ -13,9 +13,9 @@ class ConditionalMessage extends React.Component {
   }
 
   componentWillMount () {
-    const { variable, equals, push } = this.props
+    const { variable, equals, instaPush } = this.props
     if (variable !== equals) {
-      push()
+      instaPush()
     }
   }
 

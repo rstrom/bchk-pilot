@@ -36,8 +36,8 @@ class Bucket extends React.Component {
   }
 
   componentWillMount () {
-    const { push, aspects, bucket } = this.props
-    push(create(aspects, bucket))
+    const { instaPush, aspects, bucket } = this.props
+    instaPush(create(aspects, bucket))
   }
 
   render () { return <div></div> }

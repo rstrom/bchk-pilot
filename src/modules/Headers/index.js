@@ -20,9 +20,8 @@ class Headers extends React.Component {
     http
       .get('https://httpbin.org/get')
       .end((err, res) => {
-        this.props.push(res.body.headers)
+        this.props.instaPush(res.body.headers)
       })
-    console.log('mount')
   }
 
   render () {

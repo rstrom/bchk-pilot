@@ -24,8 +24,8 @@ class Bernoulli extends React.Component {
   }
 
   componentWillMount () {
-    const { variable, p, push } = this.props
-    push({
+    const { variable, p, instaPush } = this.props
+    instaPush({
       [variable]: xorshift.random() > (1 - p)
     })
   }
