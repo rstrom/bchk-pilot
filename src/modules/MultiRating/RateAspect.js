@@ -10,7 +10,7 @@ import Button from '../global/components/Button'
 @Radium
 class RateAspect extends React.Component {
   render () {
-    const {
+    const { 
       aspect,
       handleRating,
       handleConfirm,
@@ -55,7 +55,7 @@ class RateAspect extends React.Component {
               handler={() => handleConfirm(aspect)}
             />
           </div>
-          ||
+          || aspect.index === 0 &&
           <svg
             style={{
               width: '100%',

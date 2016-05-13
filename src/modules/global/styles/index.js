@@ -2,23 +2,23 @@ export default {
   column: {
     boxSizing: 'border-box',
     display: 'flex',
-    flex: 1,
-    flexBasis: 'auto',
+    flexGrow: 1,
+    flexBasis: 0,
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    msFlex: '1 0'
   },
   row: {
     boxSizing: 'border-box',
     display: 'flex',
-    flex: 1,
-    flexBasis: 'auto',
-    flexDirection: 'row',
-    justifyContent: 'space-between'
+    flexGrow: 1,
+    flexBasis: 0,
+    msFlex: '1 0',
+    flexDirection: 'row'
   },
   panel: {
     boxSizing: 'border-box',
-    flex: 1,
-    flexBasis: 'auto',
+    flexGrow: 1,
+    flexBasis: 0,
     borderRadius: '0.5rem',
     boxShadow: '0.2rem 0.2rem 1rem rgba(0, 0, 0, 0.1)',
     background: '#fff'

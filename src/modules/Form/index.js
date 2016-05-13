@@ -32,39 +32,47 @@ export default class Form extends React.Component {
   }
 
   static simulate (props) {
-    const formId = hash(JSON.stringify(props.fields))
     return _(props.fields)
-      .map((f, i) => [`form_${formId}_${i}`, 'simulated'])
+      .map((f) => [`form_${hash(f.label)}`, 'simulated'])
       .object()
       .value()
   }
 
   constructor (props) {
     super(props)
-    this.state = { responses: {} }
+    this.state = {
+      responses: {},
+      invalid: {}
+    }
   }
 
   handleField (i, value) {
-    const { responses } = this.state
+    const { responses, invalid } = this.state
+    const field = this.props.fields[i]
+
     this.setState({
       responses: {
         ...responses,
         [i]: value
+      },
+      invalid: {
+        ...invalid,
+        [i]: !!field.validate && !(new RegExp(field.validate)).test(value)
       }
     })
   }
 
   submit () {
-    const { responses } = this.state
+    const { responses, incomplete } = this.state
     const { fields, push } = this.props
-    const formId = hash(JSON.stringify(fields))
-    const complete = _.every(fields, (f, i) => !!responses[i])
-    if (!complete) {
-      this.setState({ incomplete: true })
+    const n = fields.filter((f, i) => !responses[i]).length
+
+    if (n && !incomplete) {
+      this.setState({ incomplete: n })
     } else {
       push(
         _(fields)
-          .map((f, i) => [`form_${formId}_${i}`, responses[i]])
+          .map((f, i) => [`form_${hash(f.label)}`, responses[i] || 'declined'])
           .object()
           .value()
       )
@@ -78,6 +86,12 @@ export default class Form extends React.Component {
       submit,
       complete_form
     } = this.props
+
+    const {
+      responses,
+      incomplete,
+      invalid
+    } = this.state
 
     return (
       <div>
@@ -104,15 +118,17 @@ export default class Form extends React.Component {
               fields.map((f, i) => (
                 <FormField
                   {...f}
+                  invalid={invalid[i]}
+                  value={responses[i]}
                   handler={(v) => ::this.handleField(i, v)}
                   key={i}
                 />
               ))
             }
             {
-              this.state.incomplete &&
+              incomplete &&
               <div style={[styles.complete]}>
-                <span>{complete_form}</span>
+                <span>{complete_form.replace(/{n}/, incomplete)}</span>
               </div>
             }
             <div style={[styles.padding(1, 0, 0, 0)]}>

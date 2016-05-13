@@ -1,11 +1,12 @@
 import React from 'react'
 import Radium from 'radium'
+import _ from 'lodash'
 import { declare, type } from 'packs'
 import Button from '../global/components/SimpleButton'
 import Markdown from 'react-remarkable'
 import Format from '../global/services/format'
-import Slider from '../global/components/Slider'
-import Scenario from '../global/components/Scenario'
+import Rating from '../Rating'
+import Tradeoff from '../Tradeoff'
 
 const Intro = ({ text }) => (
   <Markdown
@@ -13,109 +14,75 @@ const Intro = ({ text }) => (
   />
 )
 
-const Rating = Radium(({ text, instruct, aspects }) => (
-  <div>
-    <Markdown
-      source={text}
-    />
-    <div style={[styles.screen]}>
-      <div style={[styles.panel, styles.padding(1)]}>
-        <Markdown
-          source={instruct}
-        />
-      </div>
-      <br />
-      <br />
-      <div style={[styles.panel, styles.padding(1)]}>
-        <div style={[styles.heading]}>
-          <strong style={{float:'left'}}>
-            {Format.capitalize(aspects[0].text)}
-          </strong>
-          {
-            !isNaN(aspects[0].rating) &&
-            <span style={{ float:'right', fontWeight: 'bold' }}>
-              {Number(aspects[0].rating)}
-            </span>
-          }
-        </div>
-        <Slider
-          color={aspects[0].color}
-          position={aspects[0].rating}
-          minPoint={'least you could possibly imagine'}
-          maxPoint={'most you could possibly imagine'}
-        />
-      </div>
-    </div>
+const BinaryScreen = Radium(({ children, first }) => (
+  <div style={[styles.screen]}>
+  {
+    first && children[0] || children[1]
+  }
   </div>
 ))
 
-const Tradeoff = Radium(({ text, instruct, aspects, tradeoff }) => (
+const RatingPractice = Radium(({ text, responseText, aspect, table, push }) => (
   <div>
     <Markdown
       source={text}
     />
-    <div style={[styles.screen]}>
-      <div style={[styles.panel, styles.padding(1)]}>
-        <Markdown
-          source={instruct}
-        />
-      </div>
-      <br />
-      <div style={[styles.row]}>
-        <div style={[styles.padding(1, 0.5, 0, 0), styles.column]}>
-          <Scenario
-            heading={'Option 1'}
-            aspects={[
-              {
-                text: aspects[0].text,
-                rating: aspects[0].rating,
-                color: aspects[0].color,
-                change: tradeoff[0],
-                deltaText: 'increases'
-              }, {
-                text: aspects[1].text,
-                rating: aspects[1].rating,
-                color: aspects[1].color,
-                change: 0,
-                deltaText: 'does not change'
-              }
-            ]}
-            preferText={'I prefer this option'}
-          />
-        </div>
-        <div style={[styles.padding(1, 0, 0, 0.5), styles.column]}>
-          <Scenario
-            heading={'Option 2'}
-            aspects={[
-              {
-                text: aspects[0].text,
-                rating: aspects[0].rating,
-                color: aspects[0].color,
-                change: 0,
-                deltaText: 'does not change'
-              }, {
-                text: aspects[1].text,
-                rating: aspects[1].rating,
-                color: aspects[1].color,
-                change: tradeoff[1],
-                deltaText: 'increases'
-              }
-            ]}
-            preferText={'I prefer this option'}
-          />
-        </div>
-      </div>
-      <div style={[styles.center]}>
-        <label>
-          <input
-            type="checkbox"
-          />
-          {'This decision does not make sense'}
-        </label>
-      </div>
-    </div>
+    <BinaryScreen first={!isNaN(table[`rating_${aspect.code}`])}>
+      <Markdown
+        source={
+          responseText
+            .replace(/\[aspect\]/, aspect.text)
+            .replace(/\[rating\]/, table[`rating_${aspect.code}`])
+        }
+      />
+      <Rating
+        aspect={aspect}
+        push={push}
+      />
+    </BinaryScreen>
   </div>
 ))
+
+const TradeoffPractice = Radium(({ text, instruct, responseText, aspects, tradeoff, table, push }) => {
+  const choice = table[`triple-1_${aspects[0].code}_${aspects[1].code}`]
+  const n = Number(choice) - 1
+  const m = n === 1 ? 0 : 1
+  const n_t = table[`triple-1_${aspects[0].code}_${aspects[1].code}_${n + 1}`]
+  const m_t = table[`triple-1_${aspects[0].code}_${aspects[1].code}_${m + 1}`]
+  const ratedAspects = aspects.map(a => {
+    return {
+      ...a,
+      rating: table[`rating_${a.code}`]
+    }
+  })
+
+  return (
+    <div>
+      <Markdown
+        source={text}
+      />
+      <BinaryScreen first={choice}>
+        <Markdown
+          source={
+            choice && responseText
+              .replace(/\[n\]/, n + 1)
+              .replace(/\[aspect_n\]/, aspects[n].text)
+              .replace(/\[tradeoff_n\]/, n_t)
+              .replace(/\[m\]/, m + 1)
+              .replace(/\[aspect_m\]/, aspects[m].text)
+              .replace(/\[tradeoff_m\]/, m_t)
+          }
+        />
+        <Tradeoff
+          tradeoff_range={[4, 5]}
+          text_instruct={[instruct]}
+          aspects={ratedAspects}
+          push={push}
+        />
+      </BinaryScreen>
+    </div>
+  )
+})
 
 const Understand = ({ text }) => (
   <Markdown
@@ -141,32 +108,57 @@ class Consent extends React.Component {
   }
 
   static simulate (props) {
-    return null
+    return {
+      practice: 'simulated'
+    }
   }
 
   constructor (props) {
     super(props)
-    this.state = { step: 0 }
+    this.state = { step: 0, table: {} }
   }
 
   render () {
-    const { step } = this.state
+    const { step, table } = this.state
     const { personal_aspects, policy_aspects } = this.props
     const personal_tradeoff = Math.random() > .5 ? [4,5] : [5,4]
     const policy_tradeoff = Math.random() > .5 ? [4,5] : [5,4]
 
+    const push = (state) => {
+      this.setState({
+        table: {
+          ...table,
+          ...state
+        }
+      })
+    }
+
     const screens = [
       <Intro text={this.props.intro_text} />,
-      <Rating
+      <RatingPractice
         text={
           this.props.personal_rating_text
             .replace(/\[aspect1\]/g, Format.capitalize(personal_aspects[0].text))
             .replace(/\[rating1\]/g, personal_aspects[0].rating)
         }
+        responseText={this.props.rating_response_text}
         instruct={this.props.personal_rating_instruct}
-        aspects={personal_aspects}
+        aspect={personal_aspects[0]}
+        table={table}
+        push={push}
       />,
-      <Tradeoff
+      <RatingPractice
+        text={`
+### Example
+
+Here is another practice **personal rating** about a different aspect of your life. Please read and follow the instructions below.
+        `}
+        responseText={this.props.rating_response_text}
+        aspect={personal_aspects[1]}
+        table={table}
+        push={push}
+      />,
+      <TradeoffPractice
         text={
           this.props.personal_tradeoff_text
             .replace(/\[aspect1\]/g, Format.capitalize(personal_aspects[0].text))
@@ -174,20 +166,37 @@ class Consent extends React.Component {
             .replace(/\[aspect2\]/g, Format.capitalize(personal_aspects[1].text))
             .replace(/\[tradeoff2\]/g, personal_tradeoff[1])
         }
+        responseText={this.props.tradeoff_response_text}
         instruct={this.props.personal_tradeoff_instruct}
+        table={table}
+        push={push}
         aspects={personal_aspects}
         tradeoff={personal_tradeoff}
       />,
-      <Rating
+      <RatingPractice
         text={
           this.props.policy_rating_text
             .replace(/\[aspect1\]/g, Format.capitalize(policy_aspects[0].text))
             .replace(/\[rating1\]/g, policy_aspects[0].rating)
         }
+        responseText={this.props.rating_response_text}
         instruct={this.props.policy_rating_instruct}
-        aspects={policy_aspects}
+        aspect={policy_aspects[0]}
+        table={table}
+        push={push}
       />,
-      <Tradeoff
+      <RatingPractice
+        text={`
+### Example
+
+Here is another practice **policy rating** about a different aspect of the lives of people in your nation. Please read and follow the instructions below.
+        `}
+        responseText={this.props.rating_response_text}
+        aspect={policy_aspects[1]}
+        table={table}
+        push={push}
+      />,
+      <TradeoffPractice
         text={
           this.props.policy_tradeoff_text
             .replace(/\[aspect1\]/g, Format.capitalize(policy_aspects[0].text))
@@ -195,7 +204,10 @@ class Consent extends React.Component {
             .replace(/\[aspect2\]/g, Format.capitalize(policy_aspects[1].text))
             .replace(/\[tradeoff2\]/g, policy_tradeoff[1])
         }
+        responseText={this.props.tradeoff_response_text}
         instruct={this.props.policy_tradeoff_instruct}
+        table={table}
+        push={push}
         aspects={policy_aspects}
         tradeoff={policy_tradeoff}
       />,
@@ -213,14 +225,19 @@ class Consent extends React.Component {
               <Button
                 text={this.props.again}
                 handler={() => {
-                    this.setState({ step: 0 })
+                  this.setState({ step: 0, table: {} })
                 }}
               />
               <Button
                 modStyle={{marginLeft: '1rem' }}
                 text={'OK'}
                 handler={() => {
-                    this.props.push({})
+                  this.props.push(
+                    _(table)
+                      .map((v, k) => [`practice_${k}`, v])
+                      .object()
+                      .value()
+                  )
                 }}
               />
             </div>
@@ -262,11 +279,15 @@ const styles = {
     background: '#fff'
   },
   screen: {
-    pointerEvents: 'none',
     background: '#ddd',
     border: '0.25rem solid #000',
     ...gstyles.padding(2),
     ...gstyles.margin(1, 0, 2, 0)
+  },
+  option: {
+    flexGrow: 1,
+    flexBasis: 0,
+    msFlex: '1 0'
   },
   buttons: {
     justifyContent: 'flex-end',

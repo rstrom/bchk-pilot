@@ -10,7 +10,9 @@ import MostLeast from './MostLeast'
 import Preamble from './Preamble'
 import Rating from './Rating'
 import Sample from './Sample'
+import Shuffle from './Shuffle'
 import Store from './Store'
+import Tradeoff from './Tradeoff'
 import Triple from './Triple'
 import TurkSubmit from './TurkSubmit'
 import URLParams from './URLParams'
@@ -27,8 +29,10 @@ export default {
   Preamble,
   Rating,
   Sample,
+  Shuffle,
   Store,
   Triple,
+  Tradeoff,
   TurkSubmit,
   URLParams
 }

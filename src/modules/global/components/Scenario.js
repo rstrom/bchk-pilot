@@ -14,7 +14,11 @@ export default Radium((props) => {
         props.aspects.map((a) => {
           return (
             <Aspect
-              modStyle={{flex: 1}}
+              modStyle={{
+                flexGrow: 1,
+                flexBasis: 'auto',
+                msFlex: '1 auto'
+              }}
               text={a.text}
               rating={a.rating}
               color={a.color}
@@ -24,9 +28,18 @@ export default Radium((props) => {
           )
         })
       }
-      <div style={[styles.row, { justifyContent: 'center'}]}>
+      <div style={[styles.row, {
+        justifyContent: 'center',
+        flexBasis: 'auto',
+        msFlex: '1 auto'
+      }]}>
         <Button
-          modStyle={{marginTop: '1rem', flex: 1 }}
+          modStyle={{
+            marginTop: '1rem',
+            flexGrow: 1,
+            flexBasis: 'auto',
+            msFlex: '1 auto'
+          }}
           text={props.preferText}
           handler={props.handler}
         />
@@ -42,6 +55,7 @@ const styles = {
     ...gstyles.panel,
     ...gstyles.padding(1),
     ...gstyles.column,
-    marginBottom: '1rem'
+    marginBottom: '1rem',
+    justifyContent: 'space-between'
   }
 }

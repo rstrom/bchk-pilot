@@ -4,7 +4,7 @@ import _ from 'lodash'
 class URLParams extends React.Component {
   static simulate (props) {
     return {
-      workerID: 'simulated'
+      workerID: 'simulated' + Date.now()
     }
   }
 

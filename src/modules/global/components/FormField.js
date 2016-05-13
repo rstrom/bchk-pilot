@@ -5,7 +5,8 @@ import { type } from '../types'
 
 export const FIELD_TYPES = type.Enumerate({
   TEXT_FIELD: type.Object({
-    label: type.string
+    label: type.string,
+    validate: type.string // regex
   }),
   OPTION_FIELD: type.Object({
     label: type.string,
@@ -19,11 +20,20 @@ export default Radium((field) => {
       return (
         <div style={[styles.row]}>
           <span style={[styles.item]}>
-            {field.label}
+            {field.label}:
           </span>
           <input
             type="text"
-            style={{ flex: 1 }}
+            style={[{
+              display: 'inline-block',
+              flexGrow: 1,
+              flexBasis: 0,
+              msFlex: '1 0',
+              outline: field.invalid ? 'none' :
+                field.value ? 'none' : 'initial',
+              border: field.invalid ? '2px solid #f92' :
+                field.value ? '2px solid #8f8' : '',
+            }]}
             onChange={(e) => field.handler(e.target.value)}
           />
         </div>
@@ -37,7 +47,12 @@ export default Radium((field) => {
           </span>
           <select
             defaultValue={'unselected'}
-            style={{ flex: 1 }}
+            style={[{
+              display: 'inline-block',
+              flexGrow: 1,
+              flexBasis: 0,
+              msFlex: '1 0'
+            }]}
             onChange={(e) => field.handler(e.target.value)}
           >
             <option disabled={true} value={'unselected'}> -- </option>
@@ -66,7 +81,10 @@ const styles = {
     justifyContent: 'center'
   },
   item: {
-    flex: 1,
+    display: 'inline-block',
+    flexGrow: 1,
+    flexBasis: 0,
+    msFlex: '1 0',
     fontWeight: 'bold',
     textAlign: 'right',
     ...gstyles.padding(0, 1)
