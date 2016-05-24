@@ -40,7 +40,9 @@ class Button extends React.Component {
       <div style={[
         styles.row,
         {
-          justifyContent: align
+          justifyContent: align,
+          flexGrow: 0,
+          msFlex: '0 auto'
         }
       ]}>
         <button

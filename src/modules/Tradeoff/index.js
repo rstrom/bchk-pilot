@@ -23,7 +23,8 @@ class App extends React.Component {
       )
     ),
     triple_code: declare(type.string),
-    tradeoff_range: declare(type.Array(type.number)),
+    tradeoff_range_left: declare(type.Array(type.number)),
+    tradeoff_range_right: declare(type.Array(type.number)),
     should_decrease: declare(type.boolean),
     texts_deg_pref: declare(type.array),
     text_increases: declare(type.string),
@@ -55,8 +56,10 @@ class App extends React.Component {
       }
     ],
     triple_code: '-1',
-    tradeoff_range: _.range(1,9),
+    tradeoff_range_left: _.range(1,9),
+    tradeoff_range_right: _.range(1,9),
     should_decrease: false,
+    forced_tradeoff: [false, false],
     texts_deg_pref: [
       'slightly',
       'moderately',
@@ -80,7 +83,8 @@ class App extends React.Component {
   static simulate (props) {
     const {
       aspects,
-      tradeoff_range,
+      tradeoff_range_left,
+      tradeoff_range_right,
       triple_code
     } = props
     let { should_decrease } = props
@@ -101,14 +105,24 @@ class App extends React.Component {
       should_decrease = false
     }
 
-    const signed_tradeoffs =
+    const signed_tradeoffs_left =
       should_decrease ?
-        tradeoff_range.map(t => -t) :
-        tradeoff_range
+        tradeoff_range_left.map(t => -t) :
+        tradeoff_range_left
+
+    const signed_tradeoffs_right =
+      should_decrease ?
+        tradeoff_range_right.map(t => -t) :
+        tradeoff_range_right
+
+    const tradeoff = [
+      _.sample(signed_tradeoffs_left),
+      _.sample(signed_tradeoffs_right)
+    ]
 
     return {
-      [`triple${triple_code}_${aspects[0].code}_${aspects[1].code}_1`]: _.sample(signed_tradeoffs),
-      [`triple${triple_code}_${aspects[0].code}_${aspects[1].code}_2`]: _.sample(signed_tradeoffs),
+      [`triple${triple_code}_${aspects[0].code}_${aspects[1].code}_1`]: tradeoff[0],
+      [`triple${triple_code}_${aspects[0].code}_${aspects[1].code}_2`]: tradeoff[1],
       [`triple${triple_code}_${aspects[0].code}_${aspects[1].code}_flag`]: false,
       [`triple${triple_code}_${aspects[0].code}_${aspects[1].code}_t`]: Date.now(),
       [`triple${triple_code}_${aspects[0].code}_${aspects[1].code}`]: Math.random() > 0.5 ? 1 : 2
@@ -122,9 +136,11 @@ class App extends React.Component {
   componentWillMount () {
     const {
       aspects,
-      tradeoff_range,
+      tradeoff_range_left,
+      tradeoff_range_right,
       text_decreases,
       text_increases,
+      triple_code,
       push,
       index
     } = this.props
@@ -146,10 +162,15 @@ class App extends React.Component {
       should_decrease = false
     }
 
-    const signed_tradeoffs =
+    const signed_tradeoffs_left =
       should_decrease ?
-        tradeoff_range.map(t => -t) :
-        tradeoff_range
+        tradeoff_range_left.map(t => -t) :
+        tradeoff_range_left
+
+    const signed_tradeoffs_right =
+      should_decrease ?
+        tradeoff_range_right.map(t => -t) :
+        tradeoff_range_right
 
     const increases_decreases =
       should_decrease ?
@@ -158,10 +179,9 @@ class App extends React.Component {
 
     this.setState({
       tradeoff: [
-        _.sample(signed_tradeoffs),
-        _.sample(signed_tradeoffs)
+        _.sample(signed_tradeoffs_left),
+        _.sample(signed_tradeoffs_right)
       ],
-      signed_tradeoffs,
       increases_decreases,
       flag: false
     })
@@ -232,12 +252,14 @@ class App extends React.Component {
           <Markdown
             source={text_instruct}
           />
-          <Button
-            text={text_view_examples}
-            handler={() => {
-              this.props.reinsert('Preamble', 0)
-            }}
-          />
+          {
+            // <Button
+            //   text={text_view_examples}
+            //   handler={() => {
+            //     this.props.reinsert('Preamble', 0)
+            //   }}
+            // />
+          }
         </div>
         <Motion
           defaultStyle={{val: 0}}
@@ -354,6 +376,8 @@ const styles = {
     textAlign: 'center'
   },
   option: {
+    display: 'flex',
+    justifyContent: 'space-between',
     flexGrow: 1,
     flexBasis: 0,
     msFlex: '1 0'

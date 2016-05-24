@@ -6,7 +6,10 @@ import demoA from './demographics/a'
 import demoB from './demographics/b'
 
 const start = [{
-  type: 'URLParams'
+  type: 'URLParams',
+  simulate: {
+    workerID: 'worker' + Date.now()
+  }
 }, {
   type: 'ConditionalMessage',
   variable: '$assignmentId',
@@ -68,7 +71,8 @@ const start = [{
   policy_tradeoff_text: require('./text/preamble_policy_tradeoff.md'),
   personal_tradeoff_instruct: require('./text/personal_tradeoff_instruct.md'),
   policy_tradeoff_instruct: require('./text/policy_tradeoff_instruct.md'),
-  tradeoff_response_text: require('./text/preamble_tradeoff_response.md'),
+  tradeoff_personal_edge_text: 'There is no practice personal decision about the two aspects you just rated since your ratings were beyond extreme.',
+  tradeoff_policy_edge_text: 'There is no practice policy decision about the two aspects you just rated since your ratings were beyond extreme.',
   understand_text: require('./text/preamble_understand.md')
 }]
 

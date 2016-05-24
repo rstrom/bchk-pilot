@@ -1,6 +1,10 @@
 export default (bucket, i) => [
   {
     type: 'Rating',
+    instructions: [
+      require('./text/policy_rating_instruct.md'),
+      require('./text/personal_rating_instruct.md')
+    ],
     aspect: {
       text: `$text_${bucket}${i}`,
       color: `$color_${bucket}${i}`,
@@ -9,6 +13,10 @@ export default (bucket, i) => [
     }
   }, {
     type: 'Rating',
+    instructions: [
+      require('./text/policy_rating_instruct.md'),
+      require('./text/personal_rating_instruct.md')
+    ],
     aspect: {
       text: `$text_${bucket}${i + 1}`,
       color: `$color_${bucket}${i + 1}`,
@@ -17,6 +25,10 @@ export default (bucket, i) => [
     }
   },{
     type: 'Rating',
+    instructions: [
+      require('./text/policy_rating_instruct.md'),
+      require('./text/personal_rating_instruct.md')
+    ],
     aspect: {
       text: `$text_${bucket}${i + 2}`,
       color: `$color_${bucket}${i + 2}`,

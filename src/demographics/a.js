@@ -1,6 +1,6 @@
 export default {
   type: 'Form',
-  complete_form: 'There are {n} unanswered questions on this page. By clicking "Continue", you can continue to the main survey. However, if you are comfortable completing any of the remaining questions, we ask you to please do so because it would help us with our research.',
+  complete_form: 'There are {n} unanswered questions on this page. By clicking "Continue," you can continue to the main survey. However, if you are comfortable completing any of the remaining questions, we ask you to please do so because it would help us with our research.',
   fields: [{
     label: 'Age:',
     options: ['18-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+'],
@@ -26,28 +26,14 @@ export default {
     "options" : [ "Less than high school", "High school", "Some college", "Bachelor's degree", "Graduate degree" ],
     "type" : "OPTION_FIELD"
   }, {
-    type: 'TEXT_FIELD',
-    label: 'ZIP code of home residence',
-    validate: '^\\d{5}$'
-  }, {
-    label: 'Race/ethnicity:',
-    options: [ 'White (non-Hispanic)', 'Black (non-Hispanic)', 'Hispanic (any race)', 'Asian (non-Hispanic)', 'Multiracial', 'Other' ],
-    type: 'OPTION_FIELD'
-  }, {
-    "label" : "Household size:",
-    "options" : [ "1", "2", "3", "4", "5", "6", "7+" ],
-    "type" : "OPTION_FIELD"
-  }, {
-    "label" : "Number of children:",
-    "options" : [ "0", "1", "2", "3", "4", "5+" ],
-    "type" : "OPTION_FIELD"
-  }, {
-    "label" : "Employment status:",
-    "options" : [ "Full time employee", "Part time employee", "Unemployed", "Student", "Homemaker", "Disabled", "Other" ],
-    "type" : "OPTION_FIELD"
-  }, {
+    conditions: [
+      '[Highest level of education completed:]:Some college',
+      '[Highest level of education completed:]:Bachelor\'s degree',
+      '[Highest level of education completed:]:Graduate degree',
+    ],
     "label" : "If you have attended any college, what is the field of study for your most advanced degree?",
     "options" : [
+      'Did not have a major',
       'Accounting and related services',
       'Agriculture and natural resources',
       'Anthropology',
@@ -80,6 +66,26 @@ export default {
       'Visual and performing arts',
       'Other'
     ],
+    "type" : "OPTION_FIELD"
+  }, {
+    type: 'TEXT_FIELD',
+    label: 'ZIP code of home residence',
+    validate: '^\\d{5}$'
+  }, {
+    label: 'Race/ethnicity:',
+    options: [ 'White (non-Hispanic)', 'Black (non-Hispanic)', 'Hispanic (any race)', 'Asian (non-Hispanic)', 'Multiracial', 'Other' ],
+    type: 'OPTION_FIELD'
+  }, {
+    "label" : "Household size:",
+    "options" : [ "1", "2", "3", "4", "5", "6", "7+" ],
+    "type" : "OPTION_FIELD"
+  }, {
+    "label" : "Number of children:",
+    "options" : [ "0", "1", "2", "3", "4", "5+" ],
+    "type" : "OPTION_FIELD"
+  }, {
+    "label" : "Employment status:",
+    "options" : [ "Full time employee", "Part time employee", "Unemployed", "Student", "Homemaker", "Disabled", "Other" ],
     "type" : "OPTION_FIELD"
   }, {
     type: 'OPTION_FIELD',

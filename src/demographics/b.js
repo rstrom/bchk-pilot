@@ -1,6 +1,6 @@
 export default {
   type: 'Form',
-  complete_form: 'There are {n} unanswered questions on this page. By clicking "Continue", you can continue to the main survey. However, if you are comfortable completing any of the remaining questions, we ask you to please do so because it would help us with our research.',
+  complete_form: 'There are {n} unanswered questions on this page. By clicking "Continue," you can continue to the main survey. However, if you are comfortable completing any of the remaining questions, we ask you to please do so because it would help us with our research.',
   fields: [ {
     type: 'OPTION_FIELD',
     label: 'In general, how do you consider your views on social issues?',

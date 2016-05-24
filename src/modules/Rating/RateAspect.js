@@ -19,7 +19,9 @@ class RateAspect extends React.Component {
       minPoint,
       maxPoint,
       lowPoint,
-      highPoint
+      highPoint,
+      lowWarn,
+      highWarn
     } = this.props
 
     return (

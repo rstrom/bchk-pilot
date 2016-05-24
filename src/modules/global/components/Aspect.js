@@ -64,7 +64,7 @@ const styles = {
     marginBottom: 15
   },
   text: {
-    fontSize: '1rem',
+    fontSize: '1.25rem',
     fontStyle: 'italic'
   },
   rating: {

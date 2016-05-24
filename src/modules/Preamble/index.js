@@ -22,7 +22,7 @@ const BinaryScreen = Radium(({ children, first }) => (
   </div>
 ))
 
-const RatingPractice = Radium(({ text, responseText, aspect, table, push }) => (
+const RatingPractice = Radium(({ text, instruct, responseText, aspect, table, push }) => (
   <div>
     <Markdown
       source={text}
@@ -38,43 +38,47 @@ const RatingPractice = Radium(({ text, responseText, aspect, table, push }) => (
       <Rating
         aspect={aspect}
         push={push}
+        instructions={[instruct.replace(/\[aspect\]/, aspect.text)]}
+        instruct_conditions={[true, false]}
+        key={aspect.text}
       />
     </BinaryScreen>
   </div>
 ))
 
-const TradeoffPractice = Radium(({ text, instruct, responseText, aspects, tradeoff, table, push }) => {
-  const choice = table[`triple-1_${aspects[0].code}_${aspects[1].code}`]
-  const n = Number(choice) - 1
-  const m = n === 1 ? 0 : 1
-  const n_t = table[`triple-1_${aspects[0].code}_${aspects[1].code}_${n + 1}`]
-  const m_t = table[`triple-1_${aspects[0].code}_${aspects[1].code}_${m + 1}`]
-  const ratedAspects = aspects.map(a => {
-    return {
-      ...a,
-      rating: table[`rating_${a.code}`]
-    }
-  })
-
+const TradeoffPractice = Radium(({ text, instruct, edgeCaseText, aspects, tradeoff, table, push }) => {
+  const edge = table[`triple-1_${aspects[0].code}_${aspects[1].code}_flag`]
+  const ratedAspects = aspects
+    .map((aspect) => {
+      return {
+        ...aspect,
+        rating: table[`rating_${aspect.code}`]
+      }
+    })
   return (
     <div>
       <Markdown
-        source={text}
+        source={
+          text
+            .replace(/\[aspect1\]/g, Format.capitalize(aspects[0].text))
+            .replace(/\[tradeoff1\]/g, tradeoff[0][0])
+            .replace(/\[aspect2\]/g, Format.capitalize(aspects[1].text))
+            .replace(/\[tradeoff2\]/g, tradeoff[1][0])
+        }
       />
-      <BinaryScreen first={choice}>
-        <Markdown
-          source={
-            choice && responseText
-              .replace(/\[n\]/, n + 1)
-              .replace(/\[aspect_n\]/, aspects[n].text)
-              .replace(/\[tradeoff_n\]/, n_t)
-              .replace(/\[m\]/, m + 1)
-              .replace(/\[aspect_m\]/, aspects[m].text)
-              .replace(/\[tradeoff_m\]/, m_t)
-          }
-        />
+      <BinaryScreen first={edge}>
+        <div>
+          <Markdown
+            source={edgeCaseText}
+          />
+          <Button
+            text={'Continue'}
+            handler={push}
+          />
+        </div>
         <Tradeoff
-          tradeoff_range={[4, 5]}
+          tradeoff_range_left={tradeoff[0]}
+          tradeoff_range_right={tradeoff[1]}
           text_instruct={[instruct]}
           aspects={ratedAspects}
           push={push}
@@ -118,20 +122,24 @@ class Consent extends React.Component {
     this.state = { step: 0, table: {} }
   }
 
+  push (data) {
+    window.scrollTo(0, 0)
+    const edge = _.includes(data, 'edge')
+    console.log(data, edge)
+    this.setState({
+      table: {
+        ...this.state.table,
+        ...data
+      },
+      step: edge ? this.state.step : this.state.step + 1
+    })
+  }
+
   render () {
     const { step, table } = this.state
     const { personal_aspects, policy_aspects } = this.props
-    const personal_tradeoff = Math.random() > .5 ? [4,5] : [5,4]
-    const policy_tradeoff = Math.random() > .5 ? [4,5] : [5,4]
-
-    const push = (state) => {
-      this.setState({
-        table: {
-          ...table,
-          ...state
-        }
-      })
-    }
+    const personal_tradeoff = Math.random() > .5 ? [[4], [5]] : [[5], [4]]
+    const policy_tradeoff = Math.random() > .5 ? [[4], [5]] : [[5], [4]]
 
     const screens = [
       <Intro text={this.props.intro_text} />,
@@ -145,7 +153,7 @@ class Consent extends React.Component {
         instruct={this.props.personal_rating_instruct}
         aspect={personal_aspects[0]}
         table={table}
-        push={push}
+        push={::this.push}
       />,
       <RatingPractice
         text={`
@@ -154,22 +162,17 @@ class Consent extends React.Component {
 Here is another practice **personal rating** about a different aspect of your life. Please read and follow the instructions below.
         `}
         responseText={this.props.rating_response_text}
+        instruct={this.props.personal_rating_instruct}
         aspect={personal_aspects[1]}
         table={table}
-        push={push}
+        push={::this.push}
       />,
       <TradeoffPractice
-        text={
-          this.props.personal_tradeoff_text
-            .replace(/\[aspect1\]/g, Format.capitalize(personal_aspects[0].text))
-            .replace(/\[tradeoff1\]/g, personal_tradeoff[0])
-            .replace(/\[aspect2\]/g, Format.capitalize(personal_aspects[1].text))
-            .replace(/\[tradeoff2\]/g, personal_tradeoff[1])
-        }
-        responseText={this.props.tradeoff_response_text}
+        text={this.props.personal_tradeoff_text}
+        edgeCaseText={this.props.tradeoff_personal_edge_text}
         instruct={this.props.personal_tradeoff_instruct}
         table={table}
-        push={push}
+        push={::this.push}
         aspects={personal_aspects}
         tradeoff={personal_tradeoff}
       />,
@@ -183,7 +186,7 @@ Here is another practice **personal rating** about a different aspect of your li
         instruct={this.props.policy_rating_instruct}
         aspect={policy_aspects[0]}
         table={table}
-        push={push}
+        push={::this.push}
       />,
       <RatingPractice
         text={`
@@ -192,22 +195,17 @@ Here is another practice **personal rating** about a different aspect of your li
 Here is another practice **policy rating** about a different aspect of the lives of people in your nation. Please read and follow the instructions below.
         `}
         responseText={this.props.rating_response_text}
+        instruct={this.props.policy_rating_instruct}
         aspect={policy_aspects[1]}
         table={table}
-        push={push}
+        push={::this.push}
       />,
       <TradeoffPractice
-        text={
-          this.props.policy_tradeoff_text
-            .replace(/\[aspect1\]/g, Format.capitalize(policy_aspects[0].text))
-            .replace(/\[tradeoff1\]/g, policy_tradeoff[0])
-            .replace(/\[aspect2\]/g, Format.capitalize(policy_aspects[1].text))
-            .replace(/\[tradeoff2\]/g, policy_tradeoff[1])
-        }
-        responseText={this.props.tradeoff_response_text}
+        text={this.props.policy_tradeoff_text}
+        edgeCaseText={this.props.tradeoff_policy_edge_text}
         instruct={this.props.policy_tradeoff_instruct}
         table={table}
-        push={push}
+        push={::this.push}
         aspects={policy_aspects}
         tradeoff={policy_tradeoff}
       />,
@@ -244,7 +242,7 @@ Here is another practice **policy rating** about a different aspect of the lives
           )
         }
         {
-          step + 1 < screens.length &&
+          step === 0 &&
           <div style={[styles.row, styles.buttons]}>
             <Button
               text={this.props.continue}

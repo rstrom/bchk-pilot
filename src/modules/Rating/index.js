@@ -26,28 +26,25 @@ class Index extends React.Component {
     min_point: declare(type.string),
     max_point: declare(type.string),
     low_point: declare(type.string),
-    high_point: declare(type.string)
+    high_point: declare(type.string),
+    low_warn: declare(type.number),
+    high_warn: declare(type.number),
+    warn_text: declare(type.string)
   }
 
   static defaultProps = {
-    instructions: [
-    `**Instructions**
-
-Consider **the lives of people in your nation** over the last year. On average, how would you rate the following aspects of **the lives of people in your nation** during the last year? Please use a scale from 0 to 100, where 0 is the least amount of the aspect you could possibly imagine in anyone’s life and 100 is the most you could possibly imagine in anyone’s life. Notice that ratings above 75 or below 25 are beyond extreme.
-`,
-    `**Instructions**
-
-Consider **your life** over the last year. On average, how would you rate the following aspects of **your life** during the last year? Please use a scale from 0 to 100, where 0 is the least amount of the aspect you could possibly imagine in anyone’s life and 100 is the most you could possibly imagine in anyone’s life. Notice that ratings above 75 or below 25 are beyond extreme.
-`
-],
+    instructions: ['first condition true', 'second condition true'],
     instruct_conditions: ['$policy_aspects', true],
     text_go_back: 'Go Back',
     rating_tip: 'Move the slider to set your rating',
     rating_confirm: 'Confirm Rating',
     low_point: 'extremely low',
     high_point: ' extremely high',
-    min_point: 'the least you could possibly imagine',
-    max_point: ' the most you could possibly imagine',
+    min_point: 'the lowest you can imagine',
+    max_point: ' the highest you can imagine',
+    low_warn: 8,
+    high_warn: 92,
+    warn_text: 'Notice that ratings above 75 or below 25 are beyond extreme. Move the slider to set your rating, or confirm your rating if you are satisfied with this rating.',
     aspect: {
       text: 'aspect text',
       color: '#f77',
@@ -74,15 +71,27 @@ Consider **your life** over the last year. On average, how would you rate the fo
   }
 
   confirmRating (aspect) {
-    this.props.push({
-      [`rating_${aspect.code}`]: aspect.rating,
-      [`rating_${aspect.code}_t`]: Date.now(),
-      [`rating_${aspect.code}_confirmed`]: Date.now()
-    })
+    const {
+      low_warn,
+      high_warn,
+      warn_text
+    } = this.props
+    const { warning } = this.state
+    if (!warning && (aspect.rating >=  high_warn || aspect.rating <=  low_warn)) {
+      this.setState({
+        warning: warn_text
+      })
+    } else {
+      this.props.push({
+        [`rating_${aspect.code}`]: aspect.rating,
+        [`rating_${aspect.code}_t`]: Date.now(),
+        [`rating_${aspect.code}_confirmed`]: Date.now()
+      })
+    }
   }
 
   render () {
-    const { rating } = this.state
+    const { rating, warning } = this.state
     const {
       aspect,
       text_go_back,
@@ -97,19 +106,27 @@ Consider **your life** over the last year. On average, how would you rate the fo
     const instructions = this.props.instructions
       .filter((t, i) => this.props.instruct_conditions[i])[0]
 
+    console.log(aspect.text)
     return (
       <div style={[styles.container]}>
         <div style={[styles.instructions]}>
           <Markdown
-            source={instructions}
-          />
-          <Button
-            text={text_go_back}
-            handler={() => {
-              history.back()
-            }}
+            source={
+              instructions
+                .replace(
+                  /\[aspect\]/, aspect.text.replace(/\s+$/, '')
+                )
+            }
           />
         </div>
+        {
+          warning && <div style={[
+            styles.instructions,
+            { backgroundColor: '#ff9' }
+          ]}>
+            {warning}
+          </div>
+        }
         <Rate
           aspect={{
             ...aspect,
@@ -123,7 +140,18 @@ Consider **your life** over the last year. On average, how would you rate the fo
           maxPoint={max_point}
           lowPoint={low_point}
           highPoint={high_point}
+          key={aspect.text}
         />
+        <div style={[styles.bottom]}>
+          <Button
+            align={'start'}
+            background={'rgba(255,255,255,0)'}
+            text={text_go_back}
+            handler={() => {
+              history.back()
+            }}
+          />
+        </div>
       </div>
     )
   }
@@ -140,6 +168,9 @@ const styles = {
   container: {
     marginTop: 30,
     userSelect: 'none'
+  },
+  bottom: {
+    ...gstyles.padding(2, 0, 0, 0)
   }
 }
 

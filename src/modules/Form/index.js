@@ -62,10 +62,20 @@ export default class Form extends React.Component {
     })
   }
 
+  check (conditions) {
+    const { responses } = this.state
+    const labels = this.props.fields.map((f) => f.label)
+    return !conditions || conditions
+      .map((c) => c.match(/\[(.+)\]:(.+)/))
+      .filter(([, label, res]) => responses[labels.indexOf(label)] === res)
+      .reduce((a, b) => a || b, false)
+  }
+
   submit () {
     const { responses, incomplete } = this.state
     const { fields, push } = this.props
-    const n = fields.filter((f, i) => !responses[i]).length
+    const n = fields
+      .filter((f, i) => !responses[i] && ::this.check(f.conditions)).length
 
     if (n && !incomplete) {
       this.setState({ incomplete: n })
@@ -115,15 +125,16 @@ export default class Form extends React.Component {
           <div>
             {
               !!fields.length &&
-              fields.map((f, i) => (
-                <FormField
-                  {...f}
-                  invalid={invalid[i]}
-                  value={responses[i]}
-                  handler={(v) => ::this.handleField(i, v)}
-                  key={i}
-                />
-              ))
+              fields
+                .map((f, i) => (
+                  (::this.check(f.conditions)) && <FormField
+                    {...f}
+                    invalid={invalid[i]}
+                    value={responses[i]}
+                    handler={(v) => ::this.handleField(i, v)}
+                    key={i}
+                  />
+                ))
             }
             {
               incomplete &&

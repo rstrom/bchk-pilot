@@ -6,7 +6,8 @@ import { type } from '../types'
 export const FIELD_TYPES = type.Enumerate({
   TEXT_FIELD: type.Object({
     label: type.string,
-    validate: type.string // regex
+    validate: type.string, // regex
+    invalid_message: type.string
   }),
   OPTION_FIELD: type.Object({
     label: type.string,
@@ -31,7 +32,7 @@ export default Radium((field) => {
               msFlex: '1 0',
               outline: field.invalid ? 'none' :
                 field.value ? 'none' : 'initial',
-              border: field.invalid ? '2px solid #f92' :
+              border: field.invalid ? '2px solid #f42' :
                 field.value ? '2px solid #8f8' : '',
             }]}
             onChange={(e) => field.handler(e.target.value)}
